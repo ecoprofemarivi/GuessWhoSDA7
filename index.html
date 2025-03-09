@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¿Quién es Quién? - Conceptos Económicos</title>
+  <!-- Feather Icons -->
+  <script src="https://unpkg.com/feather-icons"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    /* Base styles */
+    :root {
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-light: #eff6ff;
+      --secondary: #f3f4f6;
+      --secondary-hover: #e5e7eb;
+      --success: #10b981;
+      --success-light: #d1fae5;
+      --danger: #ef4444;
+      --danger-light: #fee2e2;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --border: #e5e7eb;
+      --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to bottom right, #f0f7ff, #f5f3ff);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #1e40af;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Game controls */
+    .game-controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .stats {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-outline {
+      background-color: white;
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover {
+      background-color: var(--secondary);
+    }
+
+    .btn-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn i {
+      margin-right: 0.5rem;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background-color: white;
+      border: 1px solid var(--border);
+    }
+
+    /* Tabs */
+    .tabs {
+      width: 100%;
+    }
+
+    .tab-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .tab-trigger {
+      padding: 0.5rem;
+      text-align: center;
+      background-color: var(--secondary);
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .tab-trigger.active {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Card grid */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    /* Cards */
+    .card {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .card-content {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .card-icon {
+      width: 4rem;
+      height: 4rem;
+      border-radius: 9999px;
+      background-color: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .card-title {
+      font-weight: 500;
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .card-badge {
+      font-size: 0.75rem;
+      background-color: var(--secondary);
+      color: var(--text);
+    }
+
+    /* Card states */
+    .card.inactive {
+      opacity: 0.4;
+      filter: grayscale(1);
+      cursor: default;
+    }
+
+    .card.selected-correct {
+      box-shadow: 0 0 0 3px var(--success);
+    }
+
+    .card.selected-incorrect {
+      box-shadow: 0 0 0 3px var(--danger);
+    }
+
+    .card.mystery {
+      box-shadow: 0 0 0 3px var(--success);
+    }
+
+    /* Questions */
+    .questions-container {
+      background-color: white;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      box-shadow: var(--card-shadow);
+    }
+
+    .questions-title {
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+
+    .questions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .question-button {
+      display: flex;
+      align-items: center;
+      text-align: left;
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 0.375rem;
+      background-color: white;
+      border: 1px solid var(--border);
+    }
+
+    .question-button:hover:not(.disabled) {
+      background-color: var(--secondary);
+    }
+
+    .question-button.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .question-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      border-radius: 0.375rem;
+      background-color: var(--secondary);
+      border: 1px solid var(--border);
+    }
+
+    .question-badge {
+      margin-left: auto;
+    }
+
+    .badge-success {
+      background-color: var(--success-light);
+      color: var(--success);
+    }
+
+    .badge-danger {
+      background-color: var(--danger-light);
+      color: var(--danger);
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background-color: white;
+      border-radius: 0.5rem;
+      width: 90%;
+      max-width: 28rem;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+      padding: 1.25rem 1.25rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .modal-description {
+      color: var(--text-light);
+      margin-top: 0.25rem;
+    }
+
+    .modal-body {
+      padding: 1.25rem;
+    }
+
+    .modal-footer {
+      padding: 0.75rem 1.25rem 1.25rem;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .modal-content-centered {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    /* Responsive adjustments */
+    @media (min-width: 640px) {
+      body {
+        padding: 2rem;
+      }
+
+      .header h1 {
+        font-size: 2.25rem;
+      }
+
+      .card-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      }
+    }
+
+    /* Space utilities */
+    .mt-4 {
+      margin-top: 1rem;
+    }
+
+    .mt-6 {
+      margin-top: 1.5rem;
+    }
+
+    .mb-1 {
+      margin-bottom: 0.25rem;
+    }
+
+    .mb-2 {
+      margin-bottom: 0.5rem;
+    }
+
+    .mb-3 {
+      margin-bottom: 0.75rem;
+    }
+
+    .mb-4 {
+      margin-bottom: 1rem;
+    }
+
+    .mr-2 {
+      margin-right: 0.5rem;
+    }
+
+    .ml-auto {
+      margin-left: auto;
+    }
+
+    .space-y-2 > * + * {
+      margin-top: 0.5rem;
+    }
+
+    .space-y-3 > * + * {
+      margin-top: 0.75rem;
+    }
+
+    .space-y-4 > * + * {
+      margin-top: 1rem;
+    }
+
+    /* List styles */
+    .list-decimal {
+      list-style-type: decimal;
+      padding-left: 1.5rem;
+    }
+
+    /* Text styles */
+    .text-center {
+      text-align: center;
+    }
+
+    .text-sm {
+      font-size: 0.875rem;
+    }
+
+    .text-xs {
+      font-size: 0.75rem;
+    }
+
+    .text-lg {
+      font-size: 1.125rem;
+    }
+
+    .font-medium {
+      font-weight: 500;
+    }
+
+    .font-bold {
+      font-weight: 700;
+    }
+
+    .text-gray-600 {
+      color: var(--text-light);
+    }
+
+    .italic {
+      font-style: italic;
+    }
+
+    /* Icon colors */
+    .icon-green {
+      color: #16a34a;
+    }
+
+    .icon-red {
+      color: #dc2626;
+    }
+
+    .icon-blue {
+      color: #2563eb;
+    }
+
+    .icon-yellow {
+      color: #ca8a04;
+    }
+
+    .icon-purple {
+      color: #7c3aed;
+    }
+
+    .icon-teal {
+      color: #0d9488;
+    }
+
+    .icon-orange {
+      color: #ea580c;
+    }
+
+    .icon-pink {
+      color: #db2777;
+    }
+
+    .icon-amber {
+      color: #d97706;
+    }
+
+    .icon-indigo {
+      color: #4f46e5;
+    }
+
+    /* Background colors */
+    .bg-blue-50 {
+      background-color: #eff6ff;
+    }
+
+    .w-full {
+      width: 100%;
+    }
+
+    .p-4 {
+      padding: 1rem;
+    }
+
+    .rounded-lg {
+      border-radius: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>¿Quién es Quién? - Conceptos Económicos</h1>
+    </header>
+
+    <div class="game-controls">
+      <div class="button-group">
+        <button id="new-game-btn" class="btn btn-outline">
+          <i data-feather="refresh-cw"></i>
+          Nuevo Juego
+        </button>
+        <button id="rules-btn" class="btn btn-outline">
+          <i data-feather="book-open"></i>
+          Reglas
+        </button>
+        <button id="hint-btn" class="btn btn-outline">
+          <i data-feather="help-circle"></i>
+          Pista
+        </button>
+      </div>
+      
+      <div class="stats">
+        <span class="badge" id="attempts-badge">Intentos: 0/3</span>
+        <span class="badge" id="active-cards-badge">Conceptos activos: 13</span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab-list">
+        <div class="tab-trigger active" data-tab="board">Tablero</div>
+        <div class="tab-trigger" data-tab="questions">Preguntas</div>
+      </div>
+      
+      <div class="tab-content active" id="board-tab">
+        <div class="card-grid" id="card-grid">
+          <!-- Cards will be generated here -->
+        </div>
+      </div>
+      
+      <div class="tab-content" id="questions-tab">
+        <div class="questions-container">
+          <h3 class="questions-title">Preguntas disponibles:</h3>
+          <div class="questions-list" id="available-questions">
+            <!-- Available questions will be generated here -->
+          </div>
+          
+          <div class="mt-6" id="asked-questions-container" style="display: none;">
+            <h3 class="questions-title">Preguntas realizadas:</h3>
+            <div class="questions-list" id="asked-questions">
+              <!-- Asked questions will be generated here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game result modal -->
+  <div class="modal-backdrop" id="result-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="result-title"></h2>
+        <p class="modal-description" id="result-description"></p>
+      </div>
+      <div class="modal-content-centered">
+        <div class="card-icon" id="result-icon"></div>
+        <h3 class="font-bold text-lg mb-2" id="result-name"></h3>
+        <p class="text-center text-sm text-gray-600 mb-4" id="result-concept-description"></p>
+        <span class="badge" id="result-category"></span>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary w-full" id="play-again-btn">Jugar de nuevo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules modal -->
+  <div class="modal-backdrop" id="rules-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Reglas del juego</h2>
+      </div>
+      <div class="modal-body">
+        <div class="space-y-4">
+          <p>¡Bienvenido a "¿Quién es Quién?" de conceptos económicos!</p>
+          
+          <div>
+            <h4 class="font-medium mb-1">Objetivo:</h4>
+            <p class="text-sm text-gray-600">Adivinar el concepto económico secreto haciendo preguntas o seleccionando directamente.</p>
+          </div>
+          
+          <div>
+            <h4 class="font-medium mb-1">Cómo jugar:</h4>
+            <ol class="text-sm text-gray-600 space-y-2 list-decimal">
+              <li>Haz preguntas para eliminar conceptos que no coincidan con las respuestas.</li>
+              <li>Cuando creas saber la respuesta, selecciona el concepto en el tablero.</li>
+              <li>Tienes un máximo de 3 intentos para adivinar el concepto correcto.</li>
+              <li>Los conceptos eliminados aparecerán en gris.</li>
+            </ol>
+          </div>
+          
+          <div>
+            <h4 class="font-medium mb-1">Contenidos:</h4>
+            <p class="text-sm text-gray-600">El juego incluye conceptos sobre oferta, demanda, precio, equilibrio de mercado, tipos de mercado, sistema financiero, flujo circular de la renta y agentes económicos.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="rules-close-btn">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hint modal -->
+  <div class="modal-backdrop" id="hint-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Pista</h2>
+      </div>
+      <div class="modal-body">
+        <div class="p-4 bg-blue-50 rounded-lg">
+          <p class="text-center italic" id="hint-text"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="hint-close-btn">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Feather icons
+    document.addEventListener('DOMContentLoaded', () => {
+      feather.replace();
+    });
+
+    // Define the economic concepts
+    const economicConcepts = [
+      {
+        id: 1,
+        name: "Oferta",
+        description: "Cantidad de bienes o servicios que los productores están dispuestos a vender a diferentes precios.",
+        icon: "trending-up",
+        iconColor: "icon-green",
+        category: "Mercado",
+        properties: {
+          relacionadoConPrecio: true,
+          esAgente: false,
+          esTipoDeMercado: false,
+          esFlujo: false,
+          esSistema: false,
+          relacionadoConProduccion: true,
+          relacionadoConConsumo: false,
+        }
+      },
+      {
+        id: 2,
+        name: "Demanda",
+        description: "Cantidad de bienes o servicios que los consumidores están dispuestos a comprar a diferentes precios.",
+        icon: "trending-down",
+        iconColor: "icon-red",
+        category: "Mercado",
+        properties: {
+          relacionadoConPrecio: true,
+          esAgente: false,
+          esTipoDeMercado: false,
+          esFlujo: false,
+          esSistema: false,
+          relacionadoConProduccion: false,
+          relacionadoConConsumo: true,
+        }
+      },
+      {
+        id: 3,
+        name: "Precio",
+        description: "Valor monetario asignado a un bien o servicio en el mercado.",
+        icon: "dollar-sign",
+        iconColor: "icon-yellow",
+        category: "Mercado",
+        properties: {
+          relacionadoConPrecio: true,
+          esAgente: false,
+          esTipoDeMercado: false,
+          esFlujo: false,
+          esSistema: false,
+          relacionadoConProduccion: true,
+          relacionadoConConsumo: true,
+        }
+      },
+      {
+        id: 4,
+        name: "Equilibrio de Mercado",
+        description: "Punto donde la oferta y la demanda se igualan, determinando el precio y la cantidad de equilibrio.",
+        icon: "activity",
+        iconColor: "icon-blue",
+        category: "Mercado",
+        properties: {
+          relacionadoConPrecio: true,
+          esAgente: false,
+          esTipoDeMercado: false,
+          esFlujo: false,
+          esSistema: false,
+          relacionadoConProduccion: true,
+          relacionadoConConsumo: true,
+        }
+      },
+      {
+        id: 5,
+        name: "Competencia Perfecta",
+        description: "Mercado con muchos compradores y vendedores, productos homogéneos y libre entrada y salida.",
+        icon: "bar-chart-2",
+        iconColor: "icon-indigo",
+        category: "Tipos de Mercado",
+        properties: {
+          relacionadoConPrecio: true,
+          esAgente: false,
+          esTipoDeMercado: true,
+          esFlujo: false,
+          esSistema: false,
+          relacionadoConProduccion: true,
+          relacionadoConConsumo: false,
+        }
+      },
+      {
+        id: 6,
+        name: "Monopolio",
+        description: "Mercado con un solo vendedor que controla la oferta y el precio.",
+        icon: "home",
+        iconColor: "icon-purple",
+        category: "Tipos de Mercado",
+        properties: {
+          relacionadoConPrecio: true,
+          esAgente: false,
+          esTipoDeMercado: true,
+          esFlujo: false,
+          esSistema: false,
+          relacionadoConProduccion: true,
+          relacionadoConConsumo: false,
+        }
+      },
+      {
+        id: 7,
+        name: "Oligopolio",
+        description: "Mercado dominado por un pequeño número de grandes empresas.",
+        icon: "grid",
+        iconColor: "icon-teal",
+        category: "Tipos de Mercado",
+        properties: {
+          relacionadoConPrecio: true,
+          esAgente: false,
+          esTipoDeMercado: true,
+          esFlujo: false,
+          esSistema: false,
+          relacionadoConProduccion: true,
+          relacionadoConConsumo: false,
+        }
+      },
+      {
+        id: 8,
+        name: "Competencia Monopolística",
+        description: "Mercado con muchos vendedores que ofrecen productos diferenciados.",
+        icon: "layout",
+        iconColor: "icon-orange",
+        category: "Tipos de Mercado",
+        properties: {
+          relacionadoConPrecio: true,
+          esAgente: false,
+          esTipoDeMercado: true,
+          esFlujo: false,
+          esSistema: false,
+          relacionadoConProduccion: true,
+          relacionadoConConsumo: false,
+        }
+      },
+      {
+        id: 9,
+        name: "Sistema Financiero",
+        description: "Conjunto de instituciones que facilitan el flujo de fondos entre ahorradores e inversores.",
+        icon: "credit-card",
+        iconColor: "icon-green",
+        category: "Sistema",
+        properties: {
+          relacionadoConPrecio: false,
+          esAgente: false,
+          esTipoDeMercado: false,
+          esFlujo: false,
+          esSistema: true,
+          relacionadoConProduccion: false,
+          relacionadoConConsumo: false,
+        }
+      },
+      {
+        id: 10,
+        name: "Flujo Circular de la Renta",
+        description: "Modelo que muestra cómo fluyen el dinero y los recursos entre los agentes económicos.",
+        icon: "refresh-cw",
+        iconColor: "icon-blue",
+        category: "Flujo",
+        properties: {
+          relacionadoConPrecio: false,
+          esAgente: false,
+          esTipoDeMercado: false,
+          esFlujo: true,
+          esSistema: false,
+          relacionadoConProduccion: true,
+          relacionadoConConsumo: true,
+        }
+      },
+      {
+        id: 11,
+        name: "Familias",
+        description: "Agentes económicos que consumen bienes y servicios y ofrecen factores productivos.",
+        icon: "users",
+        iconColor: "icon-pink",
+        category: "Agentes Económicos",
+        properties: {
+          relacionadoConPrecio: false,
+          esAgente: true,
+          esTipoDeMercado: false,
+          esFlujo: false,
+          esSistema: false,
+          relacionadoConProduccion: false,
+          relacionadoConConsumo: true,
+        }
+      },
+      {
+        id: 12,
+        name: "Empresas",
+        description: "Agentes económicos que producen bienes y servicios utilizando factores productivos.",
+        icon: "briefcase",
+        iconColor: "icon-amber",
+        category: "Agentes Económicos",
+        properties: {
+          relacionadoConPrecio: false,
+          esAgente: true,
+          esTipoDeMercado: false,
+          esFlujo: false,
+          esSistema: false,
+          relacionadoConProduccion: true,
+          relacionadoConConsumo: false,
+        }
+      },
+      {
+        id: 13,
+        name: "Sector Público",
+        description: "Agente económico que regula la actividad económica, recauda impuestos y ofrece servicios públicos.",
+        icon: "home",
+        iconColor: "icon-blue",
+        category: "Agentes Económicos",
+        properties: {
+          relacionadoConPrecio: false,
+          esAgente: true,
+          esTipoDeMercado: false,
+          esFlujo: false,
+          esSistema: false,
+          relacionadoConProduccion: true,
+          relacionadoConConsumo: true,
+        }
+      },
+    ];
+
+    // Questions for the game
+    const questions = [
+      { id: 1, text: "¿Está relacionado con el precio?", property: "relacionadoConPrecio" },
+      { id: 2, text: "¿Es un agente económico?", property: "esAgente" },
+      { id: 3, text: "¿Es un tipo de mercado?", property: "esTipoDeMercado" },
+      { id: 4, text: "¿Es un flujo económico?", property: "esFlujo" },
+      { id: 5, text: "¿Es un sistema?", property: "esSistema" },
+      { id: 6, text: "¿Está relacionado con la producción?", property: "relacionadoConProduccion" },
+      { id: 7, text: "¿Está relacionado con el consumo?", property: "relacionadoConConsumo" },
+    ];
+
+    // Game state
+    let gameState = {
+      mysteryCard: null,
+      activeCards: [],
+      selectedCard: null,
+      gameOver: false,
+      win: false,
+      attempts: 0,
+      askedQuestions: []
+    };
+
+    // DOM elements
+    const cardGrid = document.getElementById('card-grid');
+    const availableQuestions = document.getElementById('available-questions');
+    const askedQuestions = document.getElementById('asked-questions');
+    const askedQuestionsContainer = document.getElementById('asked-questions-container');
+    const attemptsCounter = document.getElementById('attempts-badge');
+    const activeCardsCounter = document.getElementById('active-cards-badge');
+    const resultModal = document.getElementById('result-modal');
+    const resultTitle = document.getElementById('result-title');
+    const resultDescription = document.getElementById('result-description');
+    const resultIcon = document.getElementById('result-icon');
+    const resultName = document.getElementById('result-name');
+    const resultConceptDescription = document.getElementById('result-concept-description');
+    const resultCategory = document.getElementById('result-category');
+    const playAgainBtn = document.getElementById('play-again-btn');
+    const newGameBtn = document.getElementById('new-game-btn');
+    const rulesBtn = document.getElementById('rules-btn');
+    const rulesModal = document.getElementById('rules-modal');
+    const rulesCloseBtn = document.getElementById('rules-close-btn');
+    const hintBtn = document.getElementById('hint-btn');
+    const hintModal = document.getElementById('hint-modal');
+    const hintText = document.getElementById('hint-text');
+    const hintCloseBtn = document.getElementById('hint-close-btn');
+    const tabTriggers = document.querySelectorAll('.tab-trigger');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // Initialize the game
+    function initGame() {
+      renderCards();
+      renderQuestions();
+      startNewGame();
+      setupEventListeners();
+    }
+
+    // Render all cards
+    function renderCards() {
+      cardGrid.innerHTML = '';
+      economicConcepts.forEach(concept => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.id = concept.id;
+        
+        card.innerHTML = `
+          <div class="card-content">
+            <div class="card-icon">
+              <i data-feather="${concept.icon}" class="${concept.iconColor}"></i>
+            </div>
+            <h3 class="card-title">${concept.name}</h3>
+            <span class="badge card-badge">${concept.category}</span>
+          </div>
+        `;
+        
+        card.addEventListener('click', () => handleCardSelect(concept));
+        cardGrid.appendChild(card);
+      });
+      
+      // Re-initialize Feather icons after adding cards
+      feather.replace();
+    }
+
+    // Render questions
+    function renderQuestions() {
+      availableQuestions.innerHTML = '';
+      questions.forEach(question => {
+        const button = document.createElement('button');
+        button.className = 'question-button';
+        button.dataset.id = question.id;
+        button.dataset.property = question.property;
+        
+        button.innerHTML = `
+          <i data-feather="help-circle" class="mr-2"></i>
+          <span>${question.text}</span>
+        `;
+        
+        button.addEventListener('click', () => handleQuestion(question));
+        availableQuestions.appendChild(button);
+      });
+      
+      // Re-initialize Feather icons after adding questions
+      feather.replace();
+    }
+
+    // Update asked questions display
+    function updateAskedQuestions() {
+      if (gameState.askedQuestions.length > 0) {
+        askedQuestionsContainer.style.display = 'block';
+        askedQuestions.innerHTML = '';
+        
+        gameState.askedQuestions.forEach(question => {
+          const item = document.createElement('div');
+          item.className = 'question-item';
+          
+          item.innerHTML = `
+            <i data-feather="${question.answer ? 'check-circle' : 'x'}" class="${question.answer ? 'icon-green' : 'icon-red'} mr-2"></i>
+            <span>${question.text}</span>
+            <span class="badge question-badge ${question.answer ? 'badge-success' : 'badge-danger'}">${question.answer ? 'Sí' : 'No'}</span>
+          `;
+          
+          askedQuestions.appendChild(item);
+        });
+        
+        // Re-initialize Feather icons after adding asked questions
+        feather.replace();
+      } else {
+        askedQuestionsContainer.style.display = 'none';
+      }
+    }
+
+    // Start a new game
+    function startNewGame() {
+      const randomIndex = Math.floor(Math.random() * economicConcepts.length);
+      
+      gameState = {
+        mysteryCard: economicConcepts[randomIndex],
+        activeCards: [...economicConcepts],
+        selectedCard: null,
+        gameOver: false,
+        win: false,
+        attempts: 0,
+        askedQuestions: []
+      };
+      
+      updateGameDisplay();
+      updateAskedQuestions();
+      
+      // Reset all cards to active state
+      document.querySelectorAll('.card').forEach(card => {
+        card.classList.remove('inactive', 'selected-correct', 'selected-incorrect', 'mystery');
+      });
+      
+      // Reset all question buttons to enabled state
+      document.querySelectorAll('.question-button').forEach(button => {
+        button.classList.remove('disabled');
+        button.disabled = false;
+      });
+      
+      // Hide result modal
+      resultModal.classList.remove('active');
+    }
+
+    // Handle asking a question
+    function handleQuestion(question) {
+      if (gameState.gameOver) return;
+      
+      const property = question.property;
+      const answer = gameState.mysteryCard.properties[property];
+      
+      // Mark question as asked
+      gameState.askedQuestions.push({ ...question, answer });
+      updateAskedQuestions();
+      
+      // Disable the question button
+      const questionButton = document.querySelector(`.question-button[data-id="${question.id}"]`);
+      if (questionButton) {
+        questionButton.classList.add('disabled');
+        questionButton.disabled = true;
+      }
+      
+      // Filter active cards based on the answer
+      gameState.activeCards = gameState.activeCards.filter(card => 
+        card.properties[property] === answer
+      );
+      
+      // Update card display
+      document.querySelectorAll('.card').forEach(card => {
+        const cardId = parseInt(card.dataset.id);
+        if (!gameState.activeCards.some(c => c.id === cardId)) {
+          card.classList.add('inactive');
+        }
+      });
+      
+      // Update active cards counter
+      activeCardsCounter.textContent = `Conceptos activos: ${gameState.activeCards.length}`;
+      
+      // Check if only one card remains
+      if (gameState.activeCards.length === 1) {
+        // Auto-select the last card
+        handleCardSelect(gameState.activeCards[0]);
+      }
+    }
+
+    // Handle card selection
+    function handleCardSelect(card) {
+      if (gameState.gameOver) return;
+      
+      // Check if card is active
+      if (!gameState.activeCards.some(c => c.id === card.id)) return;
+      
+      gameState.selectedCard = card;
+      gameState.attempts++;
+      
+      // Update attempts counter
+      attemptsCounter.textContent = `Intentos: ${gameState.attempts}/3`;
+      
+      if (card.id === gameState.mysteryCard.id) {
+        gameState.win = true;
+        gameState.gameOver = true;
+        
+        // Highlight the correct card
+        const cardElement = document.querySelector(`.card[data-id="${card.id}"]`);
+        if (cardElement) {
+          cardElement.classList.add('selected-correct');
+        }
+        
+        // Trigger confetti effect on win
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      } else {
+        // Highlight the incorrect card
+        const cardElement = document.querySelector(`.card[data-id="${card.id}"]`);
+        if (cardElement) {
+          cardElement.classList.add('selected-incorrect');
+        }
+        
+        // If wrong guess and it was the last attempt
+        if (gameState.attempts >= 3) {
+          gameState.gameOver = true;
+          
+          // Highlight the mystery card
+          const mysteryCardElement = document.querySelector(`.card[data-id="${gameState.mysteryCard.id}"]`);
+          if (mysteryCardElement) {
+            mysteryCardElement.classList.add('mystery');
+          }
+        }
+      }
+      
+      // If game is over, show result modal
+      if (gameState.gameOver) {
+        showResultModal();
+      }
+    }
+
+    // Show result modal
+    function showResultModal() {
+      resultTitle.textContent = gameState.win ? "¡Felicidades! ¡Has ganado!" : "¡Juego terminado!";
+      resultTitle.style.color = gameState.win ? "var(--success)" : "var(--danger)";
+      
+      resultDescription.textContent = gameState.win 
+        ? `Has adivinado correctamente el concepto económico en ${gameState.attempts} ${gameState.attempts === 1 ? 'intento' : 'intentos'}.` 
+        : `El concepto económico era: ${gameState.mysteryCard.name}`;
+      
+      resultIcon.innerHTML = `<i data-feather="${gameState.mysteryCard.icon}" class="${gameState.mysteryCard.iconColor}"></i>`;
+      resultName.textContent = gameState.mysteryCard.name;
+      resultConceptDescription.textContent = gameState.mysteryCard.description;
+      resultCategory.textContent = gameState.mysteryCard.category;
+      
+      resultModal.classList.add('active');
+      
+      // Re-initialize Feather icons in the modal
+      feather.replace();
+    }
+
+    // Show hint modal
+    function showHintModal() {
+      if (gameState.gameOver) return;
+      
+      let hintMessage = "";
+      
+      switch (gameState.mysteryCard.category) {
+        case "Mercado":
+          hintMessage = "Este concepto está relacionado con el funcionamiento básico de los mercados.";
+          break;
+        case "Tipos de Mercado":
+          hintMessage = "Este concepto describe una estructura específica de organización del mercado.";
+          break;
+        case "Sistema":
+          hintMessage = "Este concepto representa un conjunto organizado de elementos interconectados.";
+          break;
+        case "Flujo":
+          hintMessage = "Este concepto muestra cómo se mueven los recursos en la economía.";
+          break;
+        case "Agentes Económicos":
+          hintMessage = "Este concepto representa a uno de los participantes principales en la actividad económica.";
+          break;
+      }
+      
+      hintText.textContent = hintMessage;
+      hintModal.classList.add('active');
+    }
+
+    // Update game display
+    function updateGameDisplay() {
+      attemptsCounter.textContent = `Intentos: ${gameState.attempts}/3`;
+      activeCardsCounter.textContent = `Conceptos activos: ${gameState.activeCards.length}`;
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // New game button
+      newGameBtn.addEventListener('click', startNewGame);
+      
+      // Play again button in result modal
+      playAgainBtn.addEventListener('click', () => {
+        resultModal.classList.remove('active');
+        startNewGame();
+      });
+      
+      // Rules button
+      rulesBtn.addEventListener('click', () => {
+        rulesModal.classList.add('active');
+      });
+      
+      // Rules close button
+      rulesCloseBtn.addEventListener('click', () => {
+        rulesModal.classList.remove('active');
+      });
+      
+      // Hint button
+      hintBtn.addEventListener('click', showHintModal);
+      
+      // Hint close button
+      hintCloseBtn.addEventListener('click', () => {
+        hintModal.classList.remove('active');
+      });
+      
+      // Tab switching
+      tabTriggers.forEach(trigger => {
+        trigger.addEventListener('click', () => {
+          const tabId = trigger.dataset.tab;
+          
+          // Update active tab trigger
+          tabTriggers.forEach(t => t.classList.remove('active'));
+          trigger.classList.add('active');
+          
+          // Update active tab content
+          tabContents.forEach(content => content.classList.remove('active'));
+          document.getElementById(`${tabId}-tab`).classList.add('active');
+        });
+      });
+      
+      // Close modals when clicking outside
+      document.querySelectorAll('.modal-backdrop').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            modal.classList.remove('active');
+          }
+        });
+      });
+    }
+
+    // Initialize the game when the page loads
+    window.addEventListener('load', initGame);
+  </script>
+</body>
+</html>
